@@ -8,8 +8,10 @@ const FormData = require('form-data');
 const fs = require('fs');
 var qs = require('qs');
 
+//creating app
 const app = express();
 
+//middlewares
 app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
 app.use(cors({origin: '*'}));
@@ -27,6 +29,7 @@ mongoose
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
 
+  //upload functionalities
   var storage = multer.diskStorage({
     destination: function (req, file, cb) {
     cb(null, './uploads')

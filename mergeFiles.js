@@ -1,7 +1,8 @@
 const PDFToolsSdk = require('@adobe/documentservices-pdftools-node-sdk');
 
 module.exports = async function mergeFile(filesToBeMerged, mergedFileName){
-try {
+let out;
+    try {
   // Initial setup, create credentials instance.
   const credentials = PDFToolsSdk.Credentials
       .serviceAccountCredentialsBuilder()
@@ -17,7 +18,7 @@ try {
     combineFilesOperation.addInput(PDFToolsSdk.FileRef.createFromLocalFile(`uploads/${filesToBeMerged[i]}`))
   }
   // Execute the operation and Save the result to the specified location.
-  combineFilesOperation.execute(executionContext)
+  out = combineFilesOperation.execute(executionContext)
       .then(result => {
             result.saveAsFile(`uploads/${mergedFileName}.pdf`)
             return ({
@@ -43,4 +44,5 @@ try {
     msg: "Server error occured"
 })
 }
+return out
 }
