@@ -281,44 +281,17 @@ app.post('/signauth/redirect', async (req,res) => {
       data : newData
     };
     axios(newConfig)
-    .then(async function (response) {
-      let agreementId = response.data.id
-      var cnfg = {
-        method: 'get',
-        url: `${api_access_point}api/rest/v6/agreements/${agreementId}/signingUrls`,
-        headers: { 
-          'Authorization': `Bearer ${access_token}`
-        }
-      };
-
-      await axios(cnfg)
-      .then(async function (response) {
-        let signingUrl = response.data.signingUrlSetInfos[0].signingUrls[0].esignUrl;
-        res.json({
-          success: true,
-          msg:"Updated agreement id",
-          url:signingUrl
-        });
-
-      }).catch(e => {
-        console.log(e)
-      axios(cnfg)
-      .then(async function (response) {
-        let signingUrl = response.data.signingUrlSetInfos[0].signingUrls[0].esignUrl;
-        res.json({
-          success: true,
-          msg:"Updated agreement id",
-          url: signingUrl
-        });
-
+    .then(() => {
+      res.json({
+        success: true,
+        msg: "Successful"
+      })
       }).catch(e =>{
         console.log(e)
         res.json({
           success: false,
           msg: "Error occured while creating signing url."
-        })
-      })
-  })
+    })
 })
 })
   .catch(e => {
