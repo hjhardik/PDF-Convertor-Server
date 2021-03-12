@@ -69,7 +69,7 @@ const redirectUrl = require('./config/signApi').redirectURL
 
 
 //findUser
-const findUser = async ({email, password}) => {
+const findUser = async (email, password) => {
   let user = await User.findOne({email, password})
   if(user){
     return user
