@@ -202,9 +202,11 @@ app.post('/editcontract/reorderDelete', async(req,res) => {
 //sign api redirection
 app.post('/signauth/redirect', async (req,res) => {
 
-  let {contract, email, code, api_access_point } = req.body; 
+  let {contract, email, code, state, api_access_point } = req.body; 
    //NOW SEND POST REQ TO TOKEN ENDPOINT
-  if (code !== null && code !== undefined) {  
+  if (code !== null && code !== undefined) {
+    contract = state.split("__")[0]
+    email = state.split("__")[1]   
   var data = qs.stringify({
     'code': code,
     'client_id': clientID,
@@ -327,7 +329,7 @@ app.post('/signauth/redirect', async (req,res) => {
     })
   })
   }else{
-    let url = `https://secure.na1.adobesign.com/public/oauth?redirect_uri=${redirectUrl}&response_type=code&client_id=${clientID}&scope=user_login:self+agreement_read:self+agreement_write:self+agreement_send:self&state=abcdg`;
+    let url = `https://secure.na1.adobesign.com/public/oauth?redirect_uri=${redirectUrl}&response_type=code&client_id=${clientID}&scope=user_login:self+agreement_read:self+agreement_write:self+agreement_send:self&state=${contract}__${email}`;
     res.json({
       success: true,
       data: url,
