@@ -7,6 +7,7 @@ const multer = require('multer');
 const FormData = require('form-data');
 const fs = require('fs');
 var qs = require('qs');
+const pdf = require('pdf-page-counter');
 
 //creating app
 const app = express();
@@ -51,13 +52,12 @@ mongoose
     return res.sendStatus(200)
     }
   );
-  });    
+});    
 
 
 //models
 const User = require("./models/User");
 //const pdfContract = require("./models/pdfContract");
-const Annotation = require("./models/Annotation");
 
 //require editing functions
 const reorderPage = require('./reorderPage.js');
@@ -143,10 +143,20 @@ app.post('/register', async (req,res)=>{
   }
 });
 
+const getNumPages = (filePath) => {
+  let dataBuffer = fs.readFileSync(filePath);
+  let totalPages = 0
+  totalPages = pdf(dataBuffer)
+  .then((data) => ( 
+    Promise.resolve(data.numpages)
+  ))
+  return totalPages
+}
+
 //contracts
 app.post('/contracts', async (req,res) => {
   //let email = req.body;
-  let contracts = fs.readdirSync("./uploads")
+  let contracts = fs.readdirSync("./uploads");
   res.send(
   contracts
   )  
@@ -157,7 +167,18 @@ app.post('/contracts', async (req,res) => {
 app.post('/editcontract/reorderDelete', async(req,res) => {
   let {selectedFiles, SP, EP, id} = req.body;
   let fileName = selectedFiles;
-
+  let num_pages = await getNumPages(`./uploads/${fileName}`);
+  if(SP > num_pages){
+    res.json({
+      success: false,
+      msg:'Starting page cannot be greater than total no of pages',
+    })
+  }else if(EP > num_pages){
+    res.json({
+      success: false,
+      msg:'Ending page cannot be greater than total no. of pages',
+    })
+  }
   if(id === 0){
     let status = await deletePage(fileName, Number(SP), Number(EP))
     if(status){
@@ -356,83 +377,6 @@ app.get('/viewpdf/:pdfLocation', (req,res)=>{
      res.contentType("application/pdf");
      res.send(data);
   })
-});
-
-//find annotations present in the contract
-app.post("/copycontract/annotations/find", async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  let reqFile = req.body.fileId;
-  if (reqFile == "" || reqFile === undefined) {
-    res.send(null);
-  } else {
-    //finds all annotations with same fileId
-    Annotation.find({ fileId: reqFile })
-      .select({ _id: 0, data: 1 })
-      .exec((err, annos) => {
-        if (!err) {
-          res.send(annos);
-        } else {
-          res.send('cannot find annotation with file id')
-        }
-      });
-  }
-});
-
-//add annotations route
-app.post("/copycontract/annotations/add", async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  let data = req.body.data;
-  let fileName = req.body.fileId;
-  if (data == "" || fileName == "" || data == undefined) {
-    res.send(null);
-  } else {
-    let id = data.id;
-    Annotation.findOne({ id: id, fileId: fileName }).then((anno) => {
-      //checks if already not present, then creates one
-      if (!anno) {
-        let ano = new Annotation({
-          id: id,
-          fileId: fileName,
-          data: data,
-        });
-        ano.save();
-      }
-    });
-    res.send('success');
-  }
-});
-//update annotations route
-app.post("/copycontract/annotations/update", (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  let data = req.body.data;
-  let fileName = req.body.fileId;
-  let id = data.id;
-  //find annos from DB by fileId and then updates it
-  Annotation.findOneAndUpdate(
-    { id: id, fileId: fileName },
-    { "data.bodyValue": data.bodyValue },
-    (err) => {
-      if (err) {
-        console.log(err)
-      }
-    }
-  );
-  res.sendStatus(200);
-});
-
-//delete annonations route
-app.post("/copycontract/annotations/delete", async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  let data = req.body.data;
-  let fileName = req.body.fileId;
-  let id = data.id;
-  //finds annos by _id and then deletes it from DB
-  await Annotation.deleteOne({ id: id, fileId: fileName }, (err) => {
-    if (err) {
-      console.log(err)
-    }
-  });
-  res.sendStatus(200);
 });
 
 //port
