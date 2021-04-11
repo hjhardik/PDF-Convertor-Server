@@ -60,10 +60,10 @@ const User = require("./models/User");
 //const pdfContract = require("./models/pdfContract");
 
 //require editing functions
-const reorderPage = require('./reorderPage.js');
-const deletePage = require('./deletePage.js');
-const splitFile = require('./splitFile.js');
-const mergeFile = require('./mergeFiles')
+const reorderPage = require('./OperationReorder.js');
+const deletePage = require('./OperationDelete.js');
+const splitFile = require('./OperationSplit.js');
+const mergeFile = require('./OperationMerge')
 
 //require all editing functions
 const clientID = require('./config/signApi').clientID
